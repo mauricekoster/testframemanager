@@ -1,15 +1,15 @@
-import odf.opendocument
 from odf.table import Table, TableRow, TableCell, TableColumn
-from odf.text import P
 
 from .Cell import Cell
+
 
 # http://stackoverflow.com/a/4544699/1846474
 class GrowingList(list):
     def __setitem__(self, index, value):
         if index >= len(self):
-            self.extend([None]*(index + 1 - len(self)))
+            self.extend([None] * (index + 1 - len(self)))
         list.__setitem__(self, index, value)
+
 
 class Sheet(object):
     """docstring for Sheet"""
@@ -21,7 +21,7 @@ class Sheet(object):
         self.Name = ods_sheet.getAttribute("name")
         self.clonespannedcolumns = False
 
-        self._readSheet()
+        self._read_sheet()
 
     def __str__(self):
         return "Sheet(%s)" % self.Name
@@ -33,20 +33,17 @@ class Sheet(object):
                 print(c.Text, end='')
             print('')
 
-    def _readSheet(self):
+    def _read_sheet(self):
         sheet = self.ods_sheet
 
         rows = sheet.getElementsByType(TableRow)
-        cols = sheet.getElementsByType(TableColumn)
         arrRows = []
 
         self._rowcount = 0
         self._colcount = 0
 
-
         # for each row
         for row in rows[:-2]:
-            row_comment = ""
             arrCells = GrowingList()
             cells = row.getElementsByType(TableCell)
 
@@ -55,7 +52,7 @@ class Sheet(object):
             for cell in cells[:-1]:
                 # repeated value?
                 repeat = cell.getAttribute("numbercolumnsrepeated")
-                if(not repeat):
+                if not repeat:
                     repeat = 1
                     spanned = int(cell.getAttribute('numbercolumnsspanned') or 0)
                     # clone spanned cells
@@ -70,15 +67,11 @@ class Sheet(object):
 
             # if row contained something
             rows_repeated = int(row.getAttribute("numberrowsrepeated") or 1)
-            self._rowcount = self._rowcount + rows_repeated
+            self._rowcount += rows_repeated
             arrRows.append(arrCells)
             if count>self._colcount:
                 self._colcount = count
 
-            #else:
-            #    print ("Empty or commented row (", row_comment, ")")
-
-        print("sheet '%s' dimension (%d, %d)" % (self.Name, self._rowcount, self._colcount))
         self._rows = arrRows
 
     @property
@@ -91,7 +84,7 @@ class Sheet(object):
 
     def Cells(self, row, column):
         row = self._rows[row-1]
-        if len(row)<column:
+        if len(row) < column:
             return Cell(self)
         else:
             return row[column-1]

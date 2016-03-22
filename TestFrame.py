@@ -18,13 +18,23 @@ class Cluster(object):
         else:
             return "?"
 
+    def dump_info(self, level=0):
+        print('\t' * level, "Information:")
+        for k, v in self._info.items():
+            print('\t' * level, "%s => %s" % (k, v))
+
+        for subcluster in self.subcluster.values():
+            print('\t' * level, '-' * 60)
+            subcluster.dump_info(level + 1)
+
 
 class SubCluster(object):
     """docstring for SubCluster"""
+
     def __init__(self):
         self._info = OrderedDict()
         self.testconditions = OrderedDict()
-        self.scenarios = OrderedDict()
+        self.scenarios = []
         self.tags = {}
         self.setup = []
 
@@ -33,6 +43,9 @@ class SubCluster(object):
 
     def add_testcondition(self, testcondition):
         self.testconditions[testcondition.id] = testcondition
+
+    def add_scenario(self, scenario):
+        self.scenarios.append(scenario)
 
     def add_setup_action(self, action):
         self.setup.append(action)
@@ -47,12 +60,25 @@ class SubCluster(object):
     def dump_info(self, level=0):
         print('\t' * level, "Information:")
         for k, v in self._info.items():
-            print ('\t' * level, "%s => %s" % (k, v))
-        print('\t' * level, "Testconditions:")
-        for tc in self.testconditions.values():
-            tc.dump_info(level+1)
-        print('\t' * level, "Tags:", self.tags)
-        print('\t' * level, "#")
+            print('\t' * level, "%s => %s" % (k, v))
+
+        if self.tags:
+            print('\t' * level, "Tags:", self.tags)
+
+        if self.setup:
+            print('\t' * level, "Sub cluster setup:")
+            for action in self.setup:
+                action.dump_info(level + 1)
+
+        if self.scenarios:
+            print('\t' * level, "Scenarios:")
+            for scenario in self.scenarios:
+                scenario.dump_info(level + 1)
+
+        if self.testconditions:
+            print('\t' * level, "Testconditions:")
+            for tc in self.testconditions.values():
+                tc.dump_info(level + 1)
 
     @property
     def id(self):
@@ -69,15 +95,40 @@ class SubCluster(object):
             return None
 
 
+class Scenario(object):
+    """docstring for Scenario"""
+
+    def __init__(self, description):
+        self.description = description
+        self.tags = {}
+        self.actions = []
+
+    def add_tag(self, key, value):
+        self.tags[key] = value
+
+    def add_action(self, action):
+        self.actions.append(action)
+
+    def dump_info(self, level=0):
+        print('\t' * level, "Scenario description: ", self.description)
+        if self.tags:
+            print('\t' * level, "- Tags:", self.tags)
+        if self.actions:
+            print('\t' * level, "- Actions:")
+            for action in self.actions:
+                action.dump_info(level + 1)
+
+
 class TestCondition(object):
     """docstring for TestCondition"""
+
     def __init__(self, id, description, business_priority, status, test_priority):
         self.id = id
         self.description = description
         self.business_priority = business_priority
         self.status = status
         self.test_priority = test_priority
-        self.setup = []                        # list of actionwords
+        self.setup = []  # list of actionwords
         self.tags = {}
         self.test_cases = OrderedDict()
 
@@ -92,23 +143,25 @@ class TestCondition(object):
 
     def dump_info(self, level=0):
         print('\t' * level, "ID: ", self.id, "Description: ", self.description)
-        print('\t' * level, "- Tags:", self.tags)
+        if self.tags:
+            print('\t' * level, "- Tags:", self.tags)
         if self.setup:
             print('\t' * level, "- Setup:")
             for action in self.setup:
-                action.dump_info(level+1)
+                action.dump_info(level + 1)
         print('\t' * level, "- Testcases:")
         for testcase in self.test_cases.values():
-            testcase.dump_info(level+1)
+            testcase.dump_info(level + 1)
 
 
 class TestCase(object):
     """docstring for TestCase"""
+
     def __init__(self, id, description, status=None):
         self.id = id
         self.description = description
         self.status = status
-        self.actions = []                  # list of action words
+        self.actions = []  # list of action words
         self.tags = {}
 
     def add_tag(self, key, value):
@@ -119,10 +172,11 @@ class TestCase(object):
 
     def dump_info(self, level=0):
         print('\t' * level, "ID: ", self.id, "Description: ", self.description)
-        print('\t' * level, "- Tags:", self.tags)
+        if self.tags:
+            print('\t' * level, "- Tags:", self.tags)
         print('\t' * level, "- Actions:")
         for action in self.actions:
-            action.dump_info(level+1)
+            action.dump_info(level + 1)
 
 
 class ActionWord(object):
@@ -132,11 +186,13 @@ class ActionWord(object):
 
     def dump_info(self, level=0):
         print('\t' * level, "action: ", self.actionword)
+        for argname, argvalue in self.arguments.items():
+            print('\t' * level, '\t', '%s: %s' % (argname, argvalue))
 
     def add_argument(self, value, name=None):
         if name:
             nm = name
         else:
-            nm = 'arg' + str(len(self.arguments)+1)
+            nm = 'arg' + str(len(self.arguments) + 1)
 
         self.arguments[nm] = value

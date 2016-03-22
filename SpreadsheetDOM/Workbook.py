@@ -11,12 +11,10 @@ class Workbook:
         self.clonespannedcolumns = clonespannedcolumns
         self.doc = odf.opendocument.load(file)
 
-
         self.SHEETSNAMES = []
         self.Sheets = Collection()
         for ods_sheet in self.doc.spreadsheet.getElementsByType(Table):
             sheet = Sheet(self, ods_sheet)
-            print(sheet)
             self.Sheets.Add(sheet, sheet.Name)
             self.SHEETSNAMES.append(sheet.Name)
 
