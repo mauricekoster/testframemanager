@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -18,8 +18,12 @@ from PyQt5.QtWidgets import (QMainWindow, QTextEdit,
     QAction, QFileDialog, QApplication)
 from PyQt5.QtGui import QIcon
 
+from SpreadsheetDOM import Workbooks
+from SpreadsheetDOM.Collection import Collection
 
-class Example(QMainWindow):
+from TestFrame import Cluster
+
+class TestFrameManagerMain(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -33,9 +37,9 @@ class Example(QMainWindow):
         self.setCentralWidget(self.textEdit)
         self.statusBar()
 
-        openFile = QAction(QIcon('open.png'), 'Open', self)
+        openFile = QAction(QIcon('icons/page_white_excel.png'), 'Open', self)
         openFile.setShortcut('Ctrl+O')
-        openFile.setStatusTip('Open new File')
+        openFile.setStatusTip('Open TestFrame cluster')
         openFile.triggered.connect(self.showDialog)
 
         menubar = self.menuBar()
@@ -43,23 +47,24 @@ class Example(QMainWindow):
         fileMenu.addAction(openFile)
 
         self.setGeometry(300, 300, 350, 300)
-        self.setWindowTitle('File dialog')
+        self.setWindowTitle('TestFrame Manager')
         self.show()
 
 
     def showDialog(self):
 
-        fname = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+        fname = QFileDialog.getOpenFileName(self, 'Open TestFrame cluster', './', "LibreOffice Calc (*.ods)")
+        wb = Workbooks.OpenWorkbook(fname[0])
 
-        if fname[0]:
-            f = open(fname[0], 'r')
+        for sheet in wb.Sheets:
+            self.textEdit.append(sheet.Name)
 
-            with f:
-                data = f.read()
-                self.textEdit.setText(data)
+        self.textEdit.append("------")
+        cluster = Cluster(wb)
+        print("Cluster %s. ID: %s" % (cluster.name, cluster.id))
 
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
-    ex = Example()
+    ex = TestFrameManagerMain()
     sys.exit(app.exec_())

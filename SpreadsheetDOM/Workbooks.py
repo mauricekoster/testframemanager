@@ -2,5 +2,7 @@ from .Workbook import Workbook
 import os
 
 def OpenWorkbook(filename):
-    print(os.path.realpath(filename))
-    return Workbook(os.path.realpath(filename))
+    try:
+        return Workbook(os.path.realpath(filename))
+    except Exception as e:
+        raise IOError("Error reading LibreOffice file")
