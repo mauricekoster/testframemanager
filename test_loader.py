@@ -27,5 +27,7 @@ def dynamic_importer(name, class_name):
     return example_package, myclass
 
 if __name__ == "__main__":
-    module, modClass = dynamic_importer("my_keywords", "Keywords")
+    import importlib
 
+    i = importlib.import_module("test.my_keywords")
+    print(dir(i))

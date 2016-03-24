@@ -3,43 +3,58 @@ from collections import OrderedDict
 
 class Cluster(object):
     def __init__(self):
-        self._info = OrderedDict()
+        self.information = OrderedDict()
         self.subcluster = OrderedDict()
 
     def add_information(self, key, value):
-        self._info[key] = value
+        self.information[key] = value
 
     def add_subcluster(self, subcluster):
         self.subcluster[subcluster.id] = subcluster
 
     def __getitem__(self, key):
-        if key in self._info:
-            return self._info[key]
+        if key in self.information:
+            return self.information[key]
         else:
             return "?"
 
     def dump_info(self, level=0):
         print('\t' * level, "Information:")
-        for k, v in self._info.items():
+        for k, v in self.information.items():
             print('\t' * level, "%s => %s" % (k, v))
 
         for subcluster in self.subcluster.values():
             print('\t' * level, '-' * 60)
             subcluster.dump_info(level + 1)
 
+    @property
+    def name(self):
+        return self.information['cluster']
+
+    @property
+    def id(self):
+        return self.information['cluster id']
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        visitor.visit(self, 'pre')
+        for subcluster in self.subcluster.values():
+            subcluster.accept(visitor)
+        visitor.visit(self, 'post')
+
 
 class SubCluster(object):
     """docstring for SubCluster"""
 
     def __init__(self):
-        self._info = OrderedDict()
+        self.information = OrderedDict()
         self.testconditions = OrderedDict()
         self.scenarios = []
         self.tags = {}
         self.setup = []
 
     def add_information(self, tag, value):
-        self._info[tag] = value
+        self.information[tag] = value
 
     def add_testcondition(self, testcondition):
         self.testconditions[testcondition.id] = testcondition
@@ -54,12 +69,30 @@ class SubCluster(object):
         self.tags[key] = value
 
     def __getitem__(self, key):
-        if key in self._info:
-            return self._info[key]
+        if key in self.information:
+            return self.information[key]
+
+    @property
+    def name(self):
+        return self.information['subcluster name']
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        if self.setup:
+            for action in self.setup:
+                action.accept(visitor)
+
+        if self.scenarios:
+            for scenario in self.scenarios:
+                scenario.accept(visitor)
+
+        if self.testconditions:
+            for tc in self.testconditions.values():
+                tc.accept(visitor)
 
     def dump_info(self, level=0):
         print('\t' * level, "Information:")
-        for k, v in self._info.items():
+        for k, v in self.information.items():
             print('\t' * level, "%s => %s" % (k, v))
 
         if self.tags:
@@ -82,15 +115,15 @@ class SubCluster(object):
 
     @property
     def id(self):
-        if 'subcluster id' in self._info:
-            return self._info['subcluster id']
+        if 'subcluster id' in self.information:
+            return self.information['subcluster id']
         else:
             return None
 
     @property
     def name(self):
-        if 'subcluster name' in self._info:
-            return self._info['subcluster name']
+        if 'subcluster name' in self.information:
+            return self.information['subcluster name']
         else:
             return None
 
@@ -108,6 +141,12 @@ class Scenario(object):
 
     def add_action(self, action):
         self.actions.append(action)
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        if self.actions:
+            for action in self.actions:
+                action.accept(visitor)
 
     def dump_info(self, level=0):
         print('\t' * level, "Scenario description: ", self.description)
@@ -141,6 +180,18 @@ class TestCondition(object):
     def add_testcase(self, testcase):
         self.test_cases[testcase.id] = testcase
 
+    def accept(self, visitor):
+        visitor.visit(self)
+        visitor.visit(self, 'pre')
+        if self.setup:
+            for action in self.setup:
+                action.accept(visitor)
+
+        for testcase in self.test_cases.values():
+            testcase.accept(visitor)
+
+        visitor.visit(self, 'post')
+
     def dump_info(self, level=0):
         print('\t' * level, "ID: ", self.id, "Description: ", self.description)
         if self.tags:
@@ -160,7 +211,7 @@ class TestCase(object):
     def __init__(self, id, description, status=None):
         self.id = id
         self.description = description
-        self.status = status
+        self.test_status = status
         self.actions = []  # list of action words
         self.tags = {}
 
@@ -169,6 +220,13 @@ class TestCase(object):
 
     def add_action(self, action):
         self.actions.append(action)
+
+    def accept(self, visitor):
+        visitor.visit(self)
+        visitor.visit(self, 'pre')
+        for action in self.actions:
+            action.accept(visitor)
+        visitor.visit(self, 'post')
 
     def dump_info(self, level=0):
         print('\t' * level, "ID: ", self.id, "Description: ", self.description)
@@ -183,6 +241,9 @@ class ActionWord(object):
     def __init__(self, actionword):
         self.actionword = actionword
         self.arguments = OrderedDict()
+
+    def accept(self, visitor):
+        visitor.visit(self)
 
     def dump_info(self, level=0):
         print('\t' * level, "action: ", self.actionword)

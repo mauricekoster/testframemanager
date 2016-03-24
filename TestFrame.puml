@@ -1,0 +1,20 @@
+@startuml
+
+
+Cluster --* SubCluster
+
+SubCluster --* TestCondition
+SubCluster --* Scenario
+SubCluster --* Actionword : cluster setup
+TestCondition --* TestCase
+TestCondition --* ActionWord : condition setup
+TestCase --* ActionWord
+Scenario --* ActionWord
+
+class Cluster {
+information
+subclusters[]
+accept()
+}
+
+@enduml
