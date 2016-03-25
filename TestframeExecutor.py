@@ -136,6 +136,9 @@ class TestFrameXUnitReporter(object):
 
 
 class Dumper(object):
+    """
+    Dumper: visitor for dumping the TestFrame Object Model to the console (stdout)
+    """
     def visit(self, element, phase=None):
 
         if type(element) is Cluster:
