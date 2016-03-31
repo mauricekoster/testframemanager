@@ -2,6 +2,7 @@ from TestFrame import *
 from SpreadsheetDOM import Workbooks
 import yaml
 
+
 class TestFrameUnexpectedTestCase(Exception):
     pass
 
@@ -200,4 +201,4 @@ class ClusterFactory(object):
         return self.subcluster
 
     def get_from_yaml(self, filename):
-        return yaml.load(open(filename,'r'))
+        return yaml.load(open(filename, 'r'))

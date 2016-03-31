@@ -4,6 +4,7 @@ from odf.style import Style
 from .Collection import Collection
 from .Sheet import Sheet
 
+
 class Workbook:
 
     # loads the file
