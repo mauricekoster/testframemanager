@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import odf.opendocument
 from odf.table import Table
 from odf.style import Style
@@ -5,12 +6,14 @@ from .Collection import Collection
 from .Sheet import Sheet
 
 
-class Workbook:
+class Workbook(object):
 
     # loads the file
-    def __init__(self, file, clonespannedcolumns=None):
+    def __init__(self, filename, clonespannedcolumns=None):
         self.clonespannedcolumns = clonespannedcolumns
-        self.doc = odf.opendocument.load(file)
+        print("Loading file: %s" % filename)
+        with open(filename, 'rb') as f:
+            self.doc = odf.opendocument.load(f)
 
         self.SHEETSNAMES = []
         self.Sheets = Collection()

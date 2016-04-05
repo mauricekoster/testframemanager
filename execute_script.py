@@ -1,47 +1,62 @@
-#! /usr/bin/env python3
-from TestFrame import *
-from TestframeExecutor import TestFrameExecutor, TestFrameXUnitReporter
+#! /usr/bin/env python2
+
+from TestframeExecutor import TestFrameExecutor, TestFrameXUnitReporter, TestFrameSelection
 from TestFrameFactory import ClusterFactory
 import importlib
 import yaml
 import argparse
 import os
+import sys
 
-base = os.path.dirname(os.path.realpath(__file__))
+base = os.path.realpath(os.getcwd())
+print("Base: %s" % base)
+sys.path.append(base)
+
 d = os.path.join(base, 'target', 'test-results')
 
 parser = argparse.ArgumentParser(description='Execute TestFrame cluster')
 parser.add_argument('script', help="Filename of script to process")
 parser.add_argument('--output', dest='output', default=d,
                    help='location of output files (xUnit reports)')
+parser.add_argument('--keywords', dest='keywords', default='keywords',
+                    help='Name of module containing the keyword implementation')
 
+parser.add_argument('--tag', dest='tags', default=None,
+                    help='Tag to execute')
 args = parser.parse_args()
 print(args)
 
-os.makedirs(args.output, exist_ok=True)
 
-if __name__ == '__main__':
-    factory = ClusterFactory()
-    factory.register_information_fields('date')
-    factory.register_information_fields('number of testcases', 'number of testconditions')
-    factory.register_information_fields('subcluster priority', 'version')
+def _mkdir_recursive(path):
+    sub_path = os.path.dirname(path)
+    if not os.path.exists(sub_path):
+        _mkdir_recursive(sub_path)
+    if not os.path.exists(path):
+        os.mkdir(path)
 
-    if os.path.isabs(args.script):
-        fn = args.script
-    else:
-        fn = os.path.join(base, args.script)
-    print(fn)
+_mkdir_recursive(args.output)
 
-    cluster = factory.get_from_ods_spreadsheet(fn)
+factory = ClusterFactory()
 
-    m = importlib.import_module("test.my_keywords")
-    executor = TestFrameExecutor(m)
-    cluster.accept(executor)
+if os.path.isabs(args.script):
+    fn = args.script
+else:
+    fn = os.path.join(base, args.script)
 
-    fp = open(os.path.join(args.output, 'junit-%s.xml' % cluster.id), 'w')
-    report = TestFrameXUnitReporter(fp)
-    cluster.accept(report)
-    fp.close()
+cluster = factory.get(fn)
 
-    with open(os.path.join(args.output, 'testresult.yaml'), 'w') as fp:
-        yaml.dump(cluster, fp)
+selector = TestFrameSelection(args.tags)
+cluster.accept(selector)
+
+
+m = importlib.import_module(args.keywords)
+executor = TestFrameExecutor(m)
+cluster.accept(executor)
+
+fp = open(os.path.join(args.output, 'junit-%s.xml' % cluster.id), 'w')
+report = TestFrameXUnitReporter(fp)
+cluster.accept(report)
+fp.close()
+
+with open(os.path.join(args.output, 'testresult.yaml'), 'w') as fp:
+    yaml.dump(cluster, fp)

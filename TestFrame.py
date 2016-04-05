@@ -18,15 +18,6 @@ class Cluster(object):
         else:
             return "?"
 
-    def dump_info(self, level=0):
-        print('\t' * level, "Information:")
-        for k, v in self.information.items():
-            print('\t' * level, "%s => %s" % (k, v))
-
-        for subcluster in self.subcluster.values():
-            print('\t' * level, '-' * 60)
-            subcluster.dump_info(level + 1)
-
     @property
     def name(self):
         return self.information['cluster']
@@ -90,29 +81,6 @@ class SubCluster(object):
             for tc in self.testconditions.values():
                 tc.accept(visitor)
 
-    def dump_info(self, level=0):
-        print('\t' * level, "Information:")
-        for k, v in self.information.items():
-            print('\t' * level, "%s => %s" % (k, v))
-
-        if self.tags:
-            print('\t' * level, "Tags:", self.tags)
-
-        if self.setup:
-            print('\t' * level, "Sub cluster setup:")
-            for action in self.setup:
-                action.dump_info(level + 1)
-
-        if self.scenarios:
-            print('\t' * level, "Scenarios:")
-            for scenario in self.scenarios:
-                scenario.dump_info(level + 1)
-
-        if self.testconditions:
-            print('\t' * level, "Testconditions:")
-            for tc in self.testconditions.values():
-                tc.dump_info(level + 1)
-
     @property
     def id(self):
         if 'subcluster id' in self.information:
@@ -147,15 +115,6 @@ class Scenario(object):
         if self.actions:
             for action in self.actions:
                 action.accept(visitor)
-
-    def dump_info(self, level=0):
-        print('\t' * level, "Scenario description: ", self.description)
-        if self.tags:
-            print('\t' * level, "- Tags:", self.tags)
-        if self.actions:
-            print('\t' * level, "- Actions:")
-            for action in self.actions:
-                action.dump_info(level + 1)
 
 
 class TestCondition(object):
@@ -192,18 +151,6 @@ class TestCondition(object):
 
         visitor.visit(self, 'post')
 
-    def dump_info(self, level=0):
-        print('\t' * level, "ID: ", self.id, "Description: ", self.description)
-        if self.tags:
-            print('\t' * level, "- Tags:", self.tags)
-        if self.setup:
-            print('\t' * level, "- Setup:")
-            for action in self.setup:
-                action.dump_info(level + 1)
-        print('\t' * level, "- Testcases:")
-        for testcase in self.test_cases.values():
-            testcase.dump_info(level + 1)
-
 
 class TestCase(object):
     """docstring for TestCase"""
@@ -228,14 +175,6 @@ class TestCase(object):
             action.accept(visitor)
         visitor.visit(self, 'post')
 
-    def dump_info(self, level=0):
-        print('\t' * level, "ID: ", self.id, "Description: ", self.description)
-        if self.tags:
-            print('\t' * level, "- Tags:", self.tags)
-        print('\t' * level, "- Actions:")
-        for action in self.actions:
-            action.dump_info(level + 1)
-
 
 class ActionWord(object):
     def __init__(self, actionword):
@@ -244,11 +183,6 @@ class ActionWord(object):
 
     def accept(self, visitor):
         visitor.visit(self)
-
-    def dump_info(self, level=0):
-        print('\t' * level, "action: ", self.actionword)
-        for argname, argvalue in self.arguments.items():
-            print('\t' * level, '\t', '%s: %s' % (argname, argvalue))
 
     def add_argument(self, value, name=None):
         if name:

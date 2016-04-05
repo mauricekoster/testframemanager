@@ -1,3 +1,5 @@
+from __future__ import print_function
+import os
 from TestFrame import *
 from SpreadsheetDOM import Workbooks
 import yaml
@@ -15,7 +17,9 @@ class ClusterFactory(object):
         self.current_scenario = None
         self.subcluster = None
 
-        self.keyword_types = {'information': ['cluster', 'cluster id', 'subcluster id', 'subcluster name'],
+        self.keyword_types = {'information': ['cluster', 'cluster id', 'subcluster id', 'subcluster name', 'date',
+                                              'number of testcases', 'number of testconditions',
+                                              'subcluster priority', 'version'],
                               'scenario': ['scenario'],
                               'testcondition': ['testcondition', 'testconditie', "test condition"],
                               'testcase': ['testcase', 'test case', 'testgeval'],
@@ -202,3 +206,15 @@ class ClusterFactory(object):
 
     def get_from_yaml(self, filename):
         return yaml.load(open(filename, 'r'))
+
+    def get(self, filename):
+        _, extension = os.path.splitext(filename)
+        dispatch = {
+            '.ods': self.get_from_ods_spreadsheet,
+            '.yaml': self.get_from_yaml,
+            '.tsv': self.get_from_tsv_file
+        }
+        print(extension)
+        return dispatch[extension](filename)
+
+

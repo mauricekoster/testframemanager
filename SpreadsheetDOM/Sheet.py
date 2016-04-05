@@ -30,7 +30,7 @@ class Sheet(object):
         print(self.Name)
         for r in range(self.RowCount):
             for c in self._rows[r]:
-                print(c.Text, end='')
+                print(c.Text, )
             print('')
 
     def _read_sheet(self):
