@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
 import odf.opendocument
 from odf.table import Table
 from odf.style import Style
+
 from .Collection import Collection
 from .Sheet import Sheet
-
 
 class Workbook(object):
 

@@ -152,9 +152,10 @@ class Dumper(object):
     def visit(self, element, phase=None):
 
         if type(element) is Cluster:
-            print("\nCluster '%s' information:" % element.name)
-            for k, v in element.information.items():
-                print("%s => %s" % (k, v))
+            if phase == 'pre':
+                print("\nCluster '%s' information:" % element.name)
+                for k, v in element.information.items():
+                    print("%s => %s" % (k, v))
 
         elif type(element) is SubCluster:
             print("\n\tSub cluster '%s' information:" % element.name)
