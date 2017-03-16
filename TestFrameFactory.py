@@ -76,11 +76,8 @@ class ClusterFactory(object):
             version_sheet = workbook.Sheets['Versie informatie']
 
         cluster = Cluster()
-        print(version_sheet.RowCount)
         for r in range(1, version_sheet.RowCount + 1):
-            print(version_sheet.Cells(r, 1).Text, version_sheet.Cells(r, 1).Style)
             if not version_sheet.Cells(r, 1).Text is None and version_sheet.Cells(r, 1).Style == 'information':
-                print("Information '{0}': {1}", version_sheet.Cells(r, 1).Text, version_sheet.Cells(r, 2).Text)
                 cluster.add_information(version_sheet.Cells(r, 1).Text, version_sheet.Cells(r, 2).Text)
 
         for sheet in workbook.Sheets:
