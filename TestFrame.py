@@ -63,10 +63,6 @@ class SubCluster(object):
         if key in self.information:
             return self.information[key]
 
-    @property
-    def name(self):
-        return self.information['subcluster name']
-
     def accept(self, visitor):
         visitor.visit(self)
         if self.setup:
@@ -92,9 +88,11 @@ class SubCluster(object):
     def name(self):
         if 'subcluster name' in self.information:
             return self.information['subcluster name']
+        elif 'subcluster naam' in self.information:
+            return self.information['subcluster naam']
         else:
             return None
-
+        
 
 class Scenario(object):
     """docstring for Scenario"""

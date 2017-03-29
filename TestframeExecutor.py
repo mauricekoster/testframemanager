@@ -159,6 +159,8 @@ class Dumper(object):
 
         elif type(element) is SubCluster:
             print("\n\tSub cluster '%s' information:" % element.name)
+            for k, v in element.information.items():
+                    print("\t\t%s => %s" % (k, v))
 
         elif type(element) is TestCondition:
             if phase is None:
